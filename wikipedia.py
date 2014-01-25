@@ -3,8 +3,11 @@
 import re
 import urllib
 
+from lxml import etree
 
-SECTION_WEIGHTS = {
+
+SECTION_SCORES = {
+    None: 1.4,
     'Name': 0.4,
     'Etymology': 0.4,
     'See also': 0.9,
@@ -12,14 +15,44 @@ SECTION_WEIGHTS = {
 }
 
 
-def score_wikilink((section_name, page_name, link_text)):
-    """Return a score for a wikilink `link` (a tuple of the form
-    `(section_name, page_name, link_text)`)."""
+# Patterns which, when near a link, hint that the link is important /
+# especially relevant
+TRIGGER_CONTEXT_PATTERNS = [
+    'became',
+    'was an',
+    'is an',
+    'author of',
+    'main article',
+]
+TRIGGER_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in TRIGGER_CONTEXT_PATTERNS]
 
-    # TODO smarter weighting
 
-    section_weight = SECTION_WEIGHTS.get(section_name, 1)
-    return section_weight
+class Wikilink(object):
+    def __init__(self, section_name, page_name, link_text, context):
+        self.section_name = section_name
+        self.page_name = page_name
+        self.link_text = link_text
+        self.context = context
+
+    def __str__(self):
+        return '<Wikilink "%s">' % self.link_text
+
+    def __repr__(self):
+        return 'Wikilink(%r, %r, %r, %r)' % (self.section_name, self.page_name,
+                                             self.link_text, self.context)
+
+
+def score_wikilink(wikilink):
+    """Return a score for a Wikilink `link`."""
+
+    score = SECTION_SCORES.get(wikilink.section_name, 1)
+
+    start_context, end_context = wikilink.context
+    for pattern in TRIGGER_CONTEXT_PATTERNS:
+        if pattern.search(start_context) or pattern.search(end_context):
+            score *= 1.25
+
+    return score
 
 
 def get_relevant_pages(doc):
@@ -44,6 +77,22 @@ def get_sections(doc):
         yield name, content[sep1 + 1:sep2]
 
 
+def get_context(link_el, max_context_size=10):
+    """Determine the token context for a given link element."""
+
+    print link_el.text
+    parent_content = etree.tostring(link_el.getparent(), encoding='utf-8',
+                                    method='text')
+    print '\tParent content: ', parent_content
+    context = re.search(r'((?:[\w,:]+\s){0,10})%s[,:\s]+((?:[\w,:]+\s){0,10})'
+                        % link_el.text, parent_content)
+
+    if not context:
+        return ('', '')
+
+    return context.groups()
+
+
 def get_wikilinks(doc, skip_sections=('References', 'Notes')):
     """Extract all wikilinks from an `lxml.etree` document. Returns a
     list of tuples of the form `(section_index, page_name, link_text)`.
@@ -56,7 +105,7 @@ def get_wikilinks(doc, skip_sections=('References', 'Notes')):
 
         links = []
         for el in section:
-            links.extend(el.xpath('//a[starts-with(@href, "/wiki/")]'))
+            links.extend(el.xpath('a[starts-with(@href, "/wiki/")]'))
 
         for link in links:
             if not link.text:
@@ -65,7 +114,9 @@ def get_wikilinks(doc, skip_sections=('References', 'Notes')):
             page_name = WIKI_LINK_HEAD.sub('', link.attrib['href'])
             page_name = link_to_page_name(page_name)
 
-            yield section_name, page_name, link.text
+            yield Wikilink(section_name, page_name, link.text,
+                           get_context(link))
+            break
 
 
 WIKI_LINK_HEAD = re.compile(r'^/?wiki/')
