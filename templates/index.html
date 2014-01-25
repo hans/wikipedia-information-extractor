@@ -3,16 +3,37 @@
 	<head>
 		<title>Learn Something</title>
 		<link rel="stylesheet" type="text/css" href="static/index.css">
+		<script src="http://code.jquery.com/jquery.min.js"></script>
+		<script src="static/script/index.js"></script>
 	</head>
 	<body>
-		<h1>Welcome,</h1>
-		<h2>What would you like to learn?</h2>
-		<div id="query_div">
-			<form action="/analyze/term" method="get">
-				<p>Enter a term or URL you want to learn: </p>
-				<input type="text" name="term">
-				<input type="submit" value="Enter">
-			</form>
+		<div id="content">
+			<h1>Welcome</h1>
+			<h2>What would you like to learn?</h2>
+			<div id="query_div">
+				<form id="form">
+					<input type="text" name="term">
+					<input type="submit" value="Enter">
+				</form>
+			</div>
+
+			<hr>
+
+			<div id="terms_div" stle="display:hidden;">
+				<h2>Terms</h2>
+				<ul id="tems_list">
+
+				</ul>
+			</div>
+			<div id="related_div" style="display:hidden">
+				<h2>Related Links</h2>
+				<ul id="related_list">
+
+				</ul>
+			</div>
+			<div id="lower_div" style="display:hidden">
+				<p>This is the lower div<p>
+			</div>
 		</div>
 	</body>
 </html>

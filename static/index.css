@@ -1,5 +1,30 @@
-.body {
+body {
+	background-color: #E7EAF8;
+}
+
+#content {
+	text-align: center;
 	margin-left: 30%;
 	margin-right: 30%;
-	text-align: center;
+}
+
+#terms_div{
+	text-align: left;
+	float: left;
+	background-color: red;
+	margin-left: 30%;
+	width: 20%;
+}
+
+#related_div{
+	text-align: left;
+	float: right;
+	background-color: orange;
+	margin-right: 30%;
+	width: 20%;
+}
+
+#lower_div{
+	background-color: green;
+	clear: both;
 }
