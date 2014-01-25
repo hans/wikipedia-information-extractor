@@ -1,8 +1,6 @@
-import sys
-import os.path
-
 import json
 import logging
+import urllib
 
 from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
@@ -24,7 +22,7 @@ class MainHandler(BaseHandler):
     parser = etree.XMLParser(encoding='utf-8')
 
     def get(self, url):
-        result = urlfetch.fetch(url)
+        result = urlfetch.fetch(urllib.unquote(url))
         if result.status_code != 200:
             self.error(500)
 
