@@ -16,7 +16,7 @@ from handlers import BaseHandler
 
 class HomeHandler(BaseHandler):
     def get(self):
-        pass
+        self.out_template("index.html")
 
 
 class MainHandler(BaseHandler):
