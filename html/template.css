@@ -1,0 +1,16 @@
+#lower {
+	background-color: green;
+	clear: both;
+}
+
+#terms {
+	float: left;
+	background-color: red;
+	width: 50%;
+}
+
+#related {
+	float: right;
+	background-color: orange;
+	width: 50%;
+}
