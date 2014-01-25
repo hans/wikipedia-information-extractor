@@ -4,6 +4,32 @@ import re
 import urllib
 
 
+SECTION_WEIGHTS = {
+    'Name': 0.4,
+    'Etymology': 0.4,
+    'See also': 0.9,
+    'References': 0,
+}
+
+
+def score_wikilink((section_name, page_name, link_text)):
+    """Return a score for a wikilink `link` (a tuple of the form
+    `(section_name, page_name, link_text)`)."""
+
+    # TODO smarter weighting
+
+    section_weight = SECTION_WEIGHTS.get(section_name, 1)
+    return section_weight
+
+
+def get_relevant_pages(doc):
+    """Get a list of page names which are relevant to an `lxml.etree`
+    document for a Wikipedia page."""
+
+    scored = {link: score_wikilink(link) for link in get_wikilinks(doc)}
+    return sorted(scored.iteritems(), reverse=True, key=lambda (l, s): s)[:10]
+
+
 def get_sections(doc):
     """Split a Wikipedia `lxml.etree` document into a list of section
     fragments. Yields tuples of the form `(section_name,
