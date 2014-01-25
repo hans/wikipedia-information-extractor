@@ -3,7 +3,7 @@
 import re
 import urllib
 
-WIKI_LINK_HEAD = re.compile(r'^/?wiki/')
+
 
 def get_wikilinks(doc):
     """Extract all wikilinks from an `lxml.etree` document. Returns a
@@ -22,9 +22,13 @@ def get_wikilinks(doc):
         yield page_name, link.text
 
 
+WIKI_LINK_HEAD = re.compile(r'^/?wiki/')
+WIKI_LINK = re.compile(r'^(?:(.+?):)?(.+?)(?:\#(.+))?$')
+
 def link_to_page_name(href):
     """Convert a Wikipedia page name as it exists in an HTML link into
-    human-readable form."""
+    human-readable form. Returns a tuple `(namespace, page_name,
+    section_name)`, where `namespace` and `section_name` may be `None`."""
 
-    # TODO: Probably need more than this
-    return urllib.unquote(href.replace('_', ' '))
+    cleaned = urllib.unquote(href.replace('_', ' '))
+    return WIKI_LINK.match(cleaned).groups()
