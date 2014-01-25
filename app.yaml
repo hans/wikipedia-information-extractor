@@ -1,0 +1,41 @@
+application: wikiflashcard
+version: dev
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+instance_class: F2
+automatic_scaling:
+  min_idle_instances: 1
+  max_idle_instances: 4
+  min_pending_latency: 20ms
+  max_pending_latency: 150ms
+
+builtins:
+- remote_api: on
+
+libraries:
+- name: jinja2
+  version: latest
+- name: numpy
+  version: latest
+
+handlers:
+- url: /.*
+  script: app.app
+
+skip_files:
+- ^(.*/)?module\.yaml
+- ^(.*/)?module\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^test/.*
+- ^bin/.*
+- ^include/.*
+- ^lib/python.*
+- ^share/.*
