@@ -18,10 +18,10 @@ class HomeHandler(BaseHandler):
         self.out_template("index.html")
 
 
-class MainHandler(BaseHandler):
+class AnalysisHandler(BaseHandler):
     parser = etree.XMLParser(encoding='utf-8')
 
-    def get(self, url):
+    def process(self, url):
         result = urlfetch.fetch(urllib.unquote(url))
         if result.status_code != 200:
             self.error(500)
@@ -34,12 +34,28 @@ class MainHandler(BaseHandler):
 
         relevant_pages = wikipedia.get_relevant_pages(document)
 
-        template_data = {
-            'relevant_pages': [(page[1], wikipedia.page_name_to_link(page))
-                               for page in relevant_pages]
+        data = {
+            # TODO
+            'terms': [],
+            'related': [{'url': wikipedia.page_name_to_link(page),
+                         'name': page[1]} for page in relevant_pages]
         }
 
-        self.out_template("analyze.html", template_data)
+        return data
+
+
+class HTMLAnalysisHandler(AnalysisHandler):
+    def get(self, url):
+        data = self.process(url)
+        self.out_template("analyze.html", data)
+
+
+class JSONAnalysisHandler(AnalysisHandler):
+    def get(self, url):
+        self.response.headers['Content-Type'] = 'application/json'
+        data = self.process(url)
+        self.out_json(data)
+
 
 # -------
 # WEBAPP
@@ -50,6 +66,7 @@ BaseHandler.JINJA_ENV = jinja2.Environment(
 
 app = webapp.WSGIApplication([
     (r'/', HomeHandler),
-    (r'/analyze/(.+)', MainHandler),
+    (r'/analyze/(.+)\.json', JSONAnalysisHandler),
+    (r'/analyze/(.+)', HTMLAnalysisHandler),
 ],
 debug=False)

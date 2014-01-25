@@ -16,7 +16,7 @@ class BaseHandler(webapp.RequestHandler):
     def out_json(self, data):
         """ Write json data to client """
         self.response.headers['Content-Type'] = 'application/json'
-        self.out(json.dumps, data)
+        self.out(json.dumps(data))
 
     def out_template(self, filename, data=None):
         """ Render and write a template to client.

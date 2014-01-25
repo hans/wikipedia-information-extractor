@@ -19,9 +19,9 @@
 		<div id="related">
 			<h2>Related Links</h2>
 			<ul>
-				{% for page, link in relevant_pages %}
+				{% for page in related %}
 					<li>
-						<p><a href="{{link}}">{{page}}</a></p>
+						<p><a href="{{page['url']}}">{{page['name']}}</a></p>
 					</li>
 				{% endfor %}
 			</ul>
