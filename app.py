@@ -35,7 +35,8 @@ class MainHandler(BaseHandler):
         relevant_pages = wikipedia.get_relevant_pages(document)
 
         template_data = {
-            'relevant_pages': relevant_pages
+            'relevant_pages': [(page[1], wikipedia.page_name_to_link(page))
+                               for page in relevant_pages]
         }
 
         self.out_template("analyze.html", template_data)

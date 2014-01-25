@@ -8,20 +8,20 @@
 		<div id="terms_div">
 			<h2>Terms</h2>
 			<ul id="tems_list">
-				{% for term in terms %}i
+				{% for term in terms %}
 					<li>
 						<h4>{{term.name}}</h4>
 						<p>{{term.deff}}</p>
 					</li>
-				{ % endfor %}
+				{% endfor %}
 			</ul>
 		</div>
 		<div id="related">
 			<h2>Related Links</h2>
 			<ul>
-				{% for link in links %}
+				{% for page, link in relevant_pages %}
 					<li>
-						<p>{{link.title}}<a href="{{link.url}}">{{link.url}}</a></p>
+						<p><a href="{{link}}">{{page}}</a></p>
 					</li>
 				{% endfor %}
 			</ul>

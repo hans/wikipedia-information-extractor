@@ -133,3 +133,21 @@ def link_to_page_name(href):
 
     cleaned = urllib.unquote(href.replace('_', ' '))
     return WIKI_LINK.match(cleaned).groups()
+
+
+def page_name_to_link((namespace, page_name, section_name)):
+    """Convert a page-name tuple of the form `(namespace, page_name,
+    section_name`) into a Wikipedia link."""
+
+    url = 'http://en.wikipedia.org/wiki/'
+    post = ''
+
+    if namespace is not None:
+        post += namespace + ':'
+
+    post += page_name.replace(' ', '_')
+
+    if section_name is not None:
+        post += '#' + section_name.replace(' ', '#')
+
+    return url + urllib.quote(post)
