@@ -4,8 +4,8 @@ import os.path
 import json
 import logging
 
+from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
-from google.appengine.urlfetch import urlfetch
 
 import jinja2
 from lxml import etree
