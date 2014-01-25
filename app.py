@@ -12,6 +12,7 @@ from lxml import etree
 from lxml.cssselect import CSSSelector
 
 from handlers import BaseHandler
+import wikipedia
 
 
 class HomeHandler(BaseHandler):
@@ -28,13 +29,17 @@ class MainHandler(BaseHandler):
             self.error(500)
 
         document = etree.fromstring(result.content, parser=self.parser)
-        document_content = document.cssselect('#mw-content-text').text()
+        # document_content = document.cssselect('#mw-content-text').text()
 
         # TODO: Extract terms
         # TODO: Extract definitions
-        # TODO: Extract related articles
 
-        template_data = {'param1': 'derp'}
+        relevant_pages = wikipedia.get_relevant_pages(document)
+
+        template_data = {
+            'relevant_pages': relevant_pages
+        }
+
         self.out_template("analyze.html", template_data)
 
 # -------

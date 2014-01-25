@@ -57,10 +57,15 @@ def score_wikilink(wikilink):
 
 def get_relevant_pages(doc):
     """Get a list of page names which are relevant to an `lxml.etree`
-    document for a Wikipedia page."""
+    document for a Wikipedia page.
+
+    Returns a list of tuples of the form `(namespace, page_name,
+    anchor)`, where `namespace` and `anchor` may each be `None`."""
 
     scored = {link: score_wikilink(link) for link in get_wikilinks(doc)}
-    return sorted(scored.iteritems(), reverse=True, key=lambda (l, s): s)[:10]
+    results = sorted(scored.iteritems(), reverse=True,
+                     key=lambda (l, s): s)[:10]
+    return [link.page_name for link, _ in results]
 
 
 def get_sections(doc):
@@ -80,10 +85,9 @@ def get_sections(doc):
 def get_context(link_el, max_context_size=10):
     """Determine the token context for a given link element."""
 
-    print link_el.text
     parent_content = etree.tostring(link_el.getparent(), encoding='utf-8',
                                     method='text')
-    print '\tParent content: ', parent_content
+
     context = re.search(r'((?:[\w,:]+\s){0,10})%s[,:\s]+((?:[\w,:]+\s){0,10})'
                         % link_el.text, parent_content)
 
