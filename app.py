@@ -21,8 +21,13 @@ class HomeHandler(BaseHandler):
 class AnalysisHandler(BaseHandler):
     parser = etree.XMLParser(encoding='utf-8')
 
-    def process(self, url):
-        result = urlfetch.fetch(urllib.unquote(url), deadline=20)
+    def process(self, method, data):
+        # TODO support method == 'term'
+
+        if method != 'url':
+            raise ValueError("method must be one of 'url', 'term'")
+
+        result = urlfetch.fetch(urllib.unquote(data), deadline=20)
         if result.status_code != 200:
             self.error(500)
 
@@ -45,17 +50,16 @@ class AnalysisHandler(BaseHandler):
 
 
 class HTMLAnalysisHandler(AnalysisHandler):
-    def get(self, url):
-        data = self.process(url)
+    def get(self, method, data):
+        data = self.process(method, data)
         self.out_template("analyze.html", data)
 
 
 class JSONAnalysisHandler(AnalysisHandler):
-    def get(self, url):
+    def get(self, method, data):
         self.response.headers['Content-Type'] = 'application/json'
-        data = self.process(url)
+        data = self.process(method, data)
         self.out_json(data)
-
 
 # -------
 # WEBAPP
@@ -66,7 +70,7 @@ BaseHandler.JINJA_ENV = jinja2.Environment(
 
 app = webapp.WSGIApplication([
     (r'/', HomeHandler),
-    (r'/analyze/(.+)\.json', JSONAnalysisHandler),
-    (r'/analyze/(.+)', HTMLAnalysisHandler),
+    (r'/analyze/(url|term)/(.+)\.json$', JSONAnalysisHandler),
+    (r'/analyze/(url|term)/(.+)', HTMLAnalysisHandler),
 ],
 debug=False)
