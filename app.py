@@ -22,7 +22,7 @@ class AnalysisHandler(BaseHandler):
     parser = etree.XMLParser(encoding='utf-8')
 
     def process(self, url):
-        result = urlfetch.fetch(urllib.unquote(url))
+        result = urlfetch.fetch(urllib.unquote(url), deadline=20)
         if result.status_code != 200:
             self.error(500)
 
