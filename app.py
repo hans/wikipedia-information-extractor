@@ -45,6 +45,8 @@ class AnalysisHandler(BaseHandler):
         data = {
             # TODO
             'terms': [],
+            'cards': [],
+            'shmoop': [],
             'related': [{'url': wikipedia.page_name_to_link(page),
                          'name': page[1]} for page in relevant_pages]
         }
