@@ -63,6 +63,11 @@ UNLIKELY_CONTEXT_PATTERNS = [
 UNLIKELY_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in UNLIKELY_CONTEXT_PATTERNS]
 
 
+MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july',
+               'august', 'september', 'october', 'november', 'december']
+DATE_PATTERN = re.compile(r'^\d (?:{})$'.format('|'.join(MONTH_NAMES)), re.I)
+
+
 class Wikilink(object):
     def __init__(self, section_name, page_name, link_text, context):
         self.section_name = section_name
@@ -84,12 +89,15 @@ def score_wikilink(wikilink):
     score = SECTION_SCORES.get(wikilink.section_name, 1)
 
     # Add score based on number of backlinks
-    backlinks = get_page_backlinks(wikilink.page_name[1])
-    score += 1/400.0 * backlinks
+    # backlinks = get_page_backlinks(wikilink.page_name[1])
+    # score += 1/400.0 * backlinks
 
-    # Penalize list pages
     if wikilink.page_name[1].startswith('List of'):
+        # Penalize list pages
         score -= 0.5
+    elif DATE_PATTERN.match(wikilink.page_name[1]):
+        # Penalize date pages
+        score -= 1
 
     # Sentences which share words with the page name should be weighted
     # higher
