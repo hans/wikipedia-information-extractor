@@ -10,6 +10,9 @@ from lxml import etree
 from util import STOPWORDS
 
 
+PARSER = etree.XMLParser(encoding='utf-8')
+
+
 SECTION_SCORES = {
     None: 1.4,
     'Name': 0.4,
@@ -74,6 +77,19 @@ def score_wikilink(wikilink):
             score *= 1.25
 
     return score
+
+
+def fetch_page((namespace, page_name, section_name)):
+    """Fetch the Wikipedia page with the given namespace, title and
+    section name. (`namespace` and `section` may be `None.`) Returns an
+    `lxml` document or `None` if the page could not be found."""
+
+    url = page_name_to_link((namespace, page_name, section_name))
+    result = urlfetch.fetch(url, deadline=20)
+    if result.status_code != 200:
+        return None
+
+    return etree.fromstring(result.content, parser=PARSER)
 
 
 def get_relevant_pages(doc):

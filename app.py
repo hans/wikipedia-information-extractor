@@ -19,21 +19,22 @@ class HomeHandler(BaseHandler):
 
 
 class AnalysisHandler(BaseHandler):
-    parser = etree.XMLParser(encoding='utf-8')
-
     def process(self, method, data):
         if method not in ['url', 'term']:
             raise ValueError("method must be one of 'url', 'term'")
 
+        document = None
         if method == 'term':
             page_name = wikipedia.get_page_for_query(data)
-            data = wikipedia.page_name_to_link((None, page_name, None))
+            document = wikipedia.fetch_page((None, page_name, None))
+        else:
+            result = urlfetch.fetch(urllib.unquote(data), deadline=20)
+            if result.status_code == 200:
+                document = etree.fromstring(result.content, parser=self.parser)
 
-        result = urlfetch.fetch(urllib.unquote(data), deadline=20)
-        if result.status_code != 200:
+        if document is None:
             self.error(500)
 
-        document = etree.fromstring(result.content, parser=self.parser)
         # document_content = document.cssselect('#mw-content-text').text()
 
         # TODO: Extract terms
