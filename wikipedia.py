@@ -7,6 +7,8 @@ import urllib
 from google.appengine.api import urlfetch
 from lxml import etree
 
+from util import STOPWORDS
+
 
 SECTION_SCORES = {
     None: 1.4,
@@ -25,6 +27,10 @@ TRIGGER_CONTEXT_PATTERNS = [
     'is an',
     'author of',
     'main article',
+    'inspired by',
+    'derived from',
+    'birthplace of',
+    'led to',
 ]
 TRIGGER_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in TRIGGER_CONTEXT_PATTERNS]
 
@@ -51,7 +57,16 @@ def score_wikilink(wikilink):
 
     # Add score based on number of backlinks
     backlinks = get_page_backlinks(wikilink.page_name[1])
-    score += 1/250 * backlinks
+    score += 1/250.0 * backlinks
+
+    # Sentences which share words with the page name should be weighted
+    # higher
+    #
+    # TODO: Better tokenization?
+    shared_words = (set(wikilink.page_name[1].split())
+                    & (set(wikilink.context[0].split())
+                       | set(wikilink.context[1].split()))) - STOPWORDS
+    score += len(shared_words) / 2.0
 
     start_context, end_context = wikilink.context
     for pattern in TRIGGER_CONTEXT_PATTERNS:
