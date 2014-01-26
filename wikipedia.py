@@ -37,6 +37,14 @@ TRIGGER_CONTEXT_PATTERNS = [
 ]
 TRIGGER_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in TRIGGER_CONTEXT_PATTERNS]
 
+# Patterns which, when near a link, hint that the link is unimportant /
+# especially irrelevant
+UNLIKELY_CONTEXT_PATTERNS = [
+    'for example',
+    'such as'
+]
+UNLIKELY_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in UNLIKELY_CONTEXT_PATTERNS]
+
 
 class Wikilink(object):
     def __init__(self, section_name, page_name, link_text, context):
@@ -60,21 +68,30 @@ def score_wikilink(wikilink):
 
     # Add score based on number of backlinks
     backlinks = get_page_backlinks(wikilink.page_name[1])
-    score += 1/250.0 * backlinks
+    score += 1/400.0 * backlinks
+
+    # Penalize list pages
+    if wikilink.page_name[1].startswith('List of'):
+        score -= 0.5
 
     # Sentences which share words with the page name should be weighted
     # higher
     #
     # TODO: Better tokenization?
-    shared_words = (set(wikilink.page_name[1].split())
-                    & (set(wikilink.context[0].split())
-                       | set(wikilink.context[1].split()))) - STOPWORDS
-    score += len(shared_words) / 2.0
+    # shared_words = (set(wikilink.page_name[1].split())
+    #                 & (set(wikilink.context[0].split())
+    #                    | set(wikilink.context[1].split()))) - STOPWORDS
+    # score += len(shared_words) / 2.0
 
     start_context, end_context = wikilink.context
+
     for pattern in TRIGGER_CONTEXT_PATTERNS:
         if pattern.search(start_context) or pattern.search(end_context):
             score *= 1.25
+
+    for pattern in UNLIKELY_CONTEXT_PATTERNS:
+        if pattern.search(start_context) or pattern.search(end_context):
+            score /= 1.25
 
     return score
 
