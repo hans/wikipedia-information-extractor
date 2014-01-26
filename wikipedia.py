@@ -176,7 +176,7 @@ def get_wikilinks(doc, skip_sections=('References', 'Notes')):
 
         links = []
         for el in section:
-            links.extend(el.xpath('a[starts-with(@href, "/wiki/")]'))
+            links.extend(el.xpath('.//a[starts-with(@href, "/wiki/")]'))
 
         for link in links:
             if not link.text:
