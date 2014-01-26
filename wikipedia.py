@@ -187,7 +187,6 @@ def get_wikilinks(doc, skip_sections=('References', 'Notes')):
 
             yield Wikilink(section_name, page_name, link.text,
                            get_context(link))
-            break
 
 
 WIKI_LINK_HEAD = re.compile(r'^/?wiki/')
