@@ -13,6 +13,23 @@ from util import STOPWORDS
 PARSER = etree.XMLParser(encoding='utf-8')
 
 
+def _fetch(url):
+    """Fetch the contents of a URL as a string."""
+
+    content = None
+
+    try:
+        result = urlfetch.fetch(url, deadline=20)
+    except AssertionError: # urlfetch not supported
+        content = urllib.urlopen(url).read()
+    else:
+        if result.status_code != 200:
+            return None
+        content = result.content
+
+    return content
+
+
 SECTION_SCORES = {
     None: 1.4,
     'Name': 0.4,
@@ -102,11 +119,7 @@ def fetch_page((namespace, page_name, section_name)):
     `lxml` document or `None` if the page could not be found."""
 
     url = page_name_to_link((namespace, page_name, section_name))
-    result = urlfetch.fetch(url, deadline=20)
-    if result.status_code != 200:
-        return None
-
-    return etree.fromstring(result.content, parser=PARSER)
+    return etree.fromstring(_fetch(url), parser=PARSER)
 
 
 def get_relevant_pages(doc):
@@ -216,12 +229,9 @@ def get_page_for_query(query):
     (Searches in the main namespace only.)"""
 
     url = WIKIPEDIA_SUGGESTION_URL % urllib.quote(query)
-    result = urlfetch.fetch(url, deadline=20)
+    content = _fetch(url)
 
-    if result.status_code != 200:
-        return None
-
-    suggestions = json.loads(result.content)['query']['search']
+    suggestions = json.loads(content)['query']['search']
     if not suggestions:
         return None
 
@@ -239,7 +249,7 @@ def get_page_backlinks(title):
     function returns 501."""
 
     url = WIKIPEDIA_BACKLINK_URL % urllib.quote(title)
-    data = json.loads(urlfetch.fetch(url, deadline=20).content)
+    data = json.loads(_fetch(url))
     count = len(data['query']['backlinks'])
 
     if 'query-continue' in data:
