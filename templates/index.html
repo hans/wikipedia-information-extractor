@@ -2,37 +2,50 @@
 <html>
 	<head>
 		<title>Learn Something</title>
-		<link rel="stylesheet" type="text/css" href="static/index.css">
+		<link rel="stylesheet" type="text/css" href="static/index.css"/>
 		<script src="http://code.jquery.com/jquery.min.js"></script>
 		<script src="static/script/index.js"></script>
 	</head>
 	<body>
 		<div id="content">
-			<h1>Welcome</h1>
-			<h2>What would you like to learn?</h2>
+			<h1>Welcome to Wiki-Flash</h1>
+			<hr>
 			<div id="query_div">
+				<h2>What would you like to learn?</h2>
 				<form id="form">
-					<input type="text" name="term">
+					<input id="term_in" size="50" type="text">
 					<input type="submit" value="Enter">
 				</form>
 			</div>
 
 			<hr>
 
-			<div id="terms_div" stle="display:hidden;">
+			<div id="terms_div" style="display:none;">
 				<h2>Terms</h2>
-				<ul id="tems_list">
+				<div id="terms_list">
 
-				</ul>
+				</div>
 			</div>
-			<div id="related_div" style="display:hidden">
+			<div id="related_div" style="display:none">
 				<h2>Related Links</h2>
-				<ul id="related_list">
+				<div id="related_list">
 
-				</ul>
+				</div>
 			</div>
-			<div id="lower_div" style="display:hidden">
-				<p>This is the lower div<p>
+
+			<hr id="second_line" style="display:none;">
+
+			<div id="lower_div" style="display:none;">
+				<div id="left_arrow" class="arrow">
+					<img src="static/images/left_arrow.png"/>
+				</div>
+				<div id="card_div">
+					<p id="question"></p>
+					<p id="answer"></p>
+				</div>
+				<div id="right_arrow" class="arrow">
+					<img src="static/images/right_arrow.png"/>
+				</div>
 			</div>
 		</div>
 	</body>
