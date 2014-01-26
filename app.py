@@ -22,10 +22,12 @@ class AnalysisHandler(BaseHandler):
     parser = etree.XMLParser(encoding='utf-8')
 
     def process(self, method, data):
-        # TODO support method == 'term'
-
-        if method != 'url':
+        if method not in ['url', 'term']:
             raise ValueError("method must be one of 'url', 'term'")
+
+        if method == 'term':
+            page_name = wikipedia.get_page_for_query(data)
+            data = wikipedia.page_name_to_link((None, page_name, None))
 
         result = urlfetch.fetch(urllib.unquote(data), deadline=20)
         if result.status_code != 200:

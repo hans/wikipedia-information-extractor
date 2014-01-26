@@ -1,8 +1,10 @@
 """Various helper functions that work with Wikipedia content"""
 
+import json
 import re
 import urllib
 
+from google.appengine.api import urlfetch
 from lxml import etree
 
 
@@ -151,3 +153,24 @@ def page_name_to_link((namespace, page_name, section_name)):
         post += '#' + section_name.replace(' ', '#')
 
     return url + urllib.quote(post)
+
+
+WIKIPEDIA_SUGGESTION_URL = ("https://en.wikipedia.org/w/api.php?action=query"
+                            "&list=search&format=json&srprop=snippet"
+                            "&srinfo=suggestion&srlimit=1&srsearch=%s")
+
+def get_page_for_query(query):
+    """Get the name of the best-matching page for a search query.
+    (Searches in the main namespace only.)"""
+
+    url = WIKIPEDIA_SUGGESTION_URL % urllib.quote(query)
+    result = urlfetch.fetch(url, deadline=20)
+
+    if result.status_code != 200:
+        return None
+
+    suggestions = json.loads(result.content)['query']['search']
+    if not suggestions:
+        return None
+
+    return suggestions[0]['title']
