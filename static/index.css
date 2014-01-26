@@ -20,17 +20,17 @@ hr {
 	min-height: 100%;
 	background-color: rgba(170,180,180,0.6);
 	text-align: center;
-	margin-left: 15%;
-	margin-right: 15%;
+	margin-left: 228px;
+	width:1064px;
 }
 
 #query_div {
 	padding: 10px;
 	border-left: 2px solid gray;
 	border-right:2px solid gray;
-	margin-right: 30%;
-	margin-left:30%;
-	width:40%;
+	margin-right: 319px;
+	margin-left:319px;
+	width:425px;
 	text-align: left;
 }
 
@@ -40,7 +40,7 @@ hr {
 	margin-bottom: 10px;
 	text-align: left;
 	float: left;
-	width: 58%;
+	width: 600px;
 }
 
 #related_div{
@@ -48,7 +48,7 @@ hr {
 	margin-bottom: 10px;
 	text-align: left;
 	float: left;
-	width: 38%;
+	width: 400px;
 }
 
 #lower_div{
@@ -72,23 +72,35 @@ a {
 	background-color: rgba(170,180,180,1);
 }
 
-.arrow {
+.arrow{
+	width:200px;
+	height:100px;
+	margin-top: 90px;
+}
+
+#left_arrow{
 	float: left;
-	width: 20%;
+}
+
+#right_arrow {
+	float:right;
 }
 
 .arrow > img {
 	width: 50px;
 	height: 50px;
-	vertical-align: middle;
 }
 
 #card_div {
 	float:left;
 	background-color: white;
-	width: 60%;
+	padding: 10px;
+	border-radius: 2px;
+	box-shadow: 5px 5px 5px #333333;
+	width: 540px;
+	height: 270px;
 }
 
 #card_div > p {
-	vertical-align: middle;
+	margin-top: 100px;
 }

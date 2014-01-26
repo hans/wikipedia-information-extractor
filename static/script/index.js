@@ -1,23 +1,24 @@
 $("document").ready(function(){
-	var cards = [
-					{ question: "First President of the United States",
-					    answer: "George Washington"
-					},
-					{
-					  question: "This man invented the lightbulb",
-					    answer: "Thomas Edison"
-					},
-					{
-					  question: "Do you love bacon?",
-					    answer: "YES!"
-					}
-				];
+	var cards = [];
 	var cardIndex = 0;
 	$("#form").submit(function(){
 		$.ajax({
-			url: "/analyze/" + encodeURIComponent($("#term_in").val()) + ".json",
+			url: "/analyze/term/" + encodeURIComponent($("#term_in").val()) + ".json",
 			data : {},
 			success: function (data){
+				data.cards = [
+								{ question: "First President of thhjghgkjgjgkjghkjjhkghjghjgkghjghjghjghjghjgjgkjhgkjgkjgkjhghje United States",
+					   	 			answer: "George Washington"
+								},
+								{
+					  			  question: "This man invented the lightbulb",
+					    			answer: "Thomas Edison"
+								},
+								{
+					  		 	  question: "Do you love bacon?",
+					    			answer: "YES!"
+								}
+							];
 				console.log(data);
 				$("#terms_list").empty();
 				$("#related_list").empty();
@@ -36,7 +37,7 @@ $("document").ready(function(){
 					$("#terms_div").css("height", $("#related_div").height().toString());
 				}
 
-				$("card_div").css("height", $("card_div").width()*(3/4));
+				$("#card_div").css("height", $("#card_div").width()*(1.0/2.0));
 				loadCard();
 				$("#terms_div").show();
 				$("#related_div").show();
@@ -47,19 +48,33 @@ $("document").ready(function(){
 		return false;
 	});
 
-	function loadCard(){
+	var loadCard = function(){
 		$("#card_question").hide();
 		$("#card_answer").hide();
 		$("#card_question").empty();
 		$("#card_answer").empty();
 		$("#card_question").append(cards[cardIndex].question);
 		$("#card_answer").append(cards[cardIndex].answer);
-		$("#question").show();
+		$("#card_question").show();
+	}
+
+	var flipCard = function(fnc){
+		$("#card_div").animate({
+			"width": "0px",
+			"background-color":"gray",
+			"margin-left":"275px"	
+		}, 200, "swing", function(){
+			$("#card_div").animate({
+				"width": "550px",
+				"background-color":"white",
+				"margin-left":"0px"	
+			}, 200, "swing", fnc);
+		});
 	}
 
 	$("#left_arrow").click( function(){
 		if(cardIndex == 0){
-			cardIndex = cards.length() - 1;
+			cardIndex = cards.length - 1;
 		} else if (cardIndex > 0){
 			cardIndex--;
 		}
@@ -67,11 +82,27 @@ $("document").ready(function(){
 	});
 
 	$("#right_arrow").click(function(){
-		if(cardIndex == cards.length() - 1){
+		if(cardIndex == cards.length - 1){
 			cardIndex = 0;
-		} else if (cardIndex < cards.length() - 1){
+		} else if (cardIndex < cards.length - 1){
 			cardIndex++;
 		}
 		loadCard();
+	});
+
+	$("#card_div").click(function(){
+		if($("#card_question").css("display") == "none"){
+			$("#card_answer").fadeOut(200, function(){
+				flipCard(function(){
+					$("#card_question").fadeIn(200);
+				});
+			});
+		} else {
+			$("#card_question").fadeOut(200, function(){
+				flipCard(function(){
+					$("#card_answer").fadeIn(200);
+				});
+			});
+		}
 	});
 });
