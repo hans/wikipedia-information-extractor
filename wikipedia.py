@@ -49,6 +49,10 @@ def score_wikilink(wikilink):
 
     score = SECTION_SCORES.get(wikilink.section_name, 1)
 
+    # Add score based on number of backlinks
+    backlinks = get_page_backlinks(wikilink.page_name[1])
+    score += 1/250 * backlinks
+
     start_context, end_context = wikilink.context
     for pattern in TRIGGER_CONTEXT_PATTERNS:
         if pattern.search(start_context) or pattern.search(end_context):
@@ -174,3 +178,22 @@ def get_page_for_query(query):
         return None
 
     return suggestions[0]['title']
+
+
+WIKIPEDIA_BACKLINK_URL = ("https://en.wikipedia.org/w/api.php?action=query"
+                          "&list=backlinks&format=json&bllimit=500"
+                          "&blnamespace=0&blfilterredir=nonredirects"
+                          "&bltitle=%s")
+
+def get_page_backlinks(title):
+    """Find the number of pages (up to 500) which link to a page with a
+    given title. If the number of pages of this type is over 500, the
+    function returns 501."""
+
+    url = WIKIPEDIA_BACKLINK_URL % urllib.quote(title)
+    data = json.loads(urlfetch.fetch(url, deadline=20).content)
+    count = len(data['query']['backlinks'])
+
+    if 'query-continue' in data:
+        return 501
+    return count
