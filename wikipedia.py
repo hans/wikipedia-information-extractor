@@ -1,9 +1,16 @@
 """Various helper functions that work with Wikipedia content"""
 
+import json
 import re
 import urllib
 
+from google.appengine.api import urlfetch
 from lxml import etree
+
+from util import STOPWORDS
+
+
+PARSER = etree.XMLParser(encoding='utf-8')
 
 
 SECTION_SCORES = {
@@ -23,8 +30,20 @@ TRIGGER_CONTEXT_PATTERNS = [
     'is an',
     'author of',
     'main article',
+    'inspired by',
+    'derived from',
+    'birthplace of',
+    'led to',
 ]
 TRIGGER_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in TRIGGER_CONTEXT_PATTERNS]
+
+# Patterns which, when near a link, hint that the link is unimportant /
+# especially irrelevant
+UNLIKELY_CONTEXT_PATTERNS = [
+    'for example',
+    'such as'
+]
+UNLIKELY_CONTEXT_PATTERNS = [re.compile(r, re.I) for r in UNLIKELY_CONTEXT_PATTERNS]
 
 
 class Wikilink(object):
@@ -47,12 +66,47 @@ def score_wikilink(wikilink):
 
     score = SECTION_SCORES.get(wikilink.section_name, 1)
 
+    # Add score based on number of backlinks
+    backlinks = get_page_backlinks(wikilink.page_name[1])
+    score += 1/400.0 * backlinks
+
+    # Penalize list pages
+    if wikilink.page_name[1].startswith('List of'):
+        score -= 0.5
+
+    # Sentences which share words with the page name should be weighted
+    # higher
+    #
+    # TODO: Better tokenization?
+    # shared_words = (set(wikilink.page_name[1].split())
+    #                 & (set(wikilink.context[0].split())
+    #                    | set(wikilink.context[1].split()))) - STOPWORDS
+    # score += len(shared_words) / 2.0
+
     start_context, end_context = wikilink.context
+
     for pattern in TRIGGER_CONTEXT_PATTERNS:
         if pattern.search(start_context) or pattern.search(end_context):
             score *= 1.25
 
+    for pattern in UNLIKELY_CONTEXT_PATTERNS:
+        if pattern.search(start_context) or pattern.search(end_context):
+            score /= 1.25
+
     return score
+
+
+def fetch_page((namespace, page_name, section_name)):
+    """Fetch the Wikipedia page with the given namespace, title and
+    section name. (`namespace` and `section` may be `None.`) Returns an
+    `lxml` document or `None` if the page could not be found."""
+
+    url = page_name_to_link((namespace, page_name, section_name))
+    result = urlfetch.fetch(url, deadline=20)
+    if result.status_code != 200:
+        return None
+
+    return etree.fromstring(result.content, parser=PARSER)
 
 
 def get_relevant_pages(doc):
@@ -151,3 +205,43 @@ def page_name_to_link((namespace, page_name, section_name)):
         post += '#' + section_name.replace(' ', '#')
 
     return url + urllib.quote(post)
+
+
+WIKIPEDIA_SUGGESTION_URL = ("https://en.wikipedia.org/w/api.php?action=query"
+                            "&list=search&format=json&srprop=snippet"
+                            "&srinfo=suggestion&srlimit=1&srsearch=%s")
+
+def get_page_for_query(query):
+    """Get the name of the best-matching page for a search query.
+    (Searches in the main namespace only.)"""
+
+    url = WIKIPEDIA_SUGGESTION_URL % urllib.quote(query)
+    result = urlfetch.fetch(url, deadline=20)
+
+    if result.status_code != 200:
+        return None
+
+    suggestions = json.loads(result.content)['query']['search']
+    if not suggestions:
+        return None
+
+    return suggestions[0]['title']
+
+
+WIKIPEDIA_BACKLINK_URL = ("https://en.wikipedia.org/w/api.php?action=query"
+                          "&list=backlinks&format=json&bllimit=500"
+                          "&blnamespace=0&blfilterredir=nonredirects"
+                          "&bltitle=%s")
+
+def get_page_backlinks(title):
+    """Find the number of pages (up to 500) which link to a page with a
+    given title. If the number of pages of this type is over 500, the
+    function returns 501."""
+
+    url = WIKIPEDIA_BACKLINK_URL % urllib.quote(title)
+    data = json.loads(urlfetch.fetch(url, deadline=20).content)
+    count = len(data['query']['backlinks'])
+
+    if 'query-continue' in data:
+        return 501
+    return count
